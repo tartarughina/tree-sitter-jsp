@@ -1,0 +1,40 @@
+{
+  "$schema": "https://tree-sitter.github.io/tree-sitter/assets/schemas/config.schema.json",
+  "grammars": [
+    {
+      "name": "jsp",
+      "camelcase": "Jsp",
+      "title": "Jsp",
+      "scope": "source.jsp",
+      "file-types": [
+        "jsp"
+      ],
+      "injection-regex": "^jsp$",
+      "class-name": "TreeSitterJsp"
+    }
+  ],
+  "metadata": {
+    "version": "0.1.0",
+    "license": "MIT",
+    "description": "Tree-sitter for JSP",
+    "authors": [
+      {
+        "name": "Riccardo Strina",
+        "email": "riccardo.strina@icloud.com",
+        "url": "https://github.com/tartarughina"
+      }
+    ],
+    "links": {
+      "repository": "https://github.com/tartarughina/tree-sitter-jsp"
+    }
+  },
+  "bindings": {
+    "c": false,
+    "go": false,
+    "node": true,
+    "python": false,
+    "rust": true,
+    "swift": false,
+    "zig": false
+  }
+}
