@@ -1,8 +1,8 @@
-#include <string>
 #include <map>
+#include <string>
 
-using std::string;
 using std::map;
+using std::string;
 
 enum TagType {
   AREA,
@@ -135,7 +135,6 @@ enum TagType {
 
   CUSTOM,
 };
-
 
 static const map<string, TagType> get_tag_map() {
   map<string, TagType> result;
@@ -272,105 +271,81 @@ static const map<string, TagType> get_tag_map() {
 static const map<string, TagType> TAG_TYPES_BY_TAG_NAME = get_tag_map();
 
 static const TagType TAG_TYPES_NOT_ALLOWED_IN_PARAGRAPHS[] = {
-  ADDRESS,
-  ARTICLE,
-  ASIDE,
-  BLOCKQUOTE,
-  DETAILS,
-  DIV,
-  DL,
-  FIELDSET,
-  FIGCAPTION,
-  FIGURE,
-  FOOTER,
-  FORM,
-  H1,
-  H2,
-  H3,
-  H4,
-  H5,
-  H6,
-  HEADER,
-  HR,
-  MAIN,
-  NAV,
-  OL,
-  P,
-  PRE,
-  SECTION,
+    ADDRESS,  ARTICLE,    ASIDE,  BLOCKQUOTE, DETAILS, DIV, DL,
+    FIELDSET, FIGCAPTION, FIGURE, FOOTER,     FORM,    H1,  H2,
+    H3,       H4,         H5,     H6,         HEADER,  HR,  MAIN,
+    NAV,      OL,         P,      PRE,        SECTION,
 };
 
-static const TagType *TAG_TYPES_NOT_ALLOWED_IN_PARAGRAPHS_END = (
-  TAG_TYPES_NOT_ALLOWED_IN_PARAGRAPHS +
-  sizeof(TAG_TYPES_NOT_ALLOWED_IN_PARAGRAPHS) /
-  sizeof(TagType)
-);
+static const TagType *TAG_TYPES_NOT_ALLOWED_IN_PARAGRAPHS_END =
+    (TAG_TYPES_NOT_ALLOWED_IN_PARAGRAPHS +
+     sizeof(TAG_TYPES_NOT_ALLOWED_IN_PARAGRAPHS) / sizeof(TagType));
 
 struct Tag {
   TagType type;
   string custom_tag_name;
 
-  // This default constructor is used in the case where there is not enough space
-  // in the serialization buffer to store all of the tags. In that case, tags
-  // that cannot be serialized will be treated as having an unknown type. These
-  // tags will be closed via implicit end tags regardless of the next closing
-  // tag is encountered.
+  // This default constructor is used in the case where there is not enough
+  // space in the serialization buffer to store all of the tags. In that case,
+  // tags that cannot be serialized will be treated as having an unknown type.
+  // These tags will be closed via implicit end tags regardless of the next
+  // closing tag is encountered.
   Tag() : type(END_OF_VOID_TAGS) {}
 
   Tag(TagType type, const string &name) : type(type), custom_tag_name(name) {}
 
   bool operator==(const Tag &other) const {
-    if (type != other.type) return false;
-    if (type == CUSTOM && custom_tag_name != other.custom_tag_name) return false;
+    if (type != other.type)
+      return false;
+    if (type == CUSTOM && custom_tag_name != other.custom_tag_name)
+      return false;
     return true;
   }
 
-  inline bool is_void() const {
-    return type < END_OF_VOID_TAGS;
-  }
+  inline bool is_void() const { return type < END_OF_VOID_TAGS; }
 
   inline bool can_contain(const Tag &tag) {
     TagType child = tag.type;
 
     switch (type) {
-      case LI: return child != LI;
+    case LI:
+      return child != LI;
 
-      case DT:
-      case DD:
-        return child != DT && child != DD;
+    case DT:
+    case DD:
+      return child != DT && child != DD;
 
-      case P:
-        return std::find(
-          TAG_TYPES_NOT_ALLOWED_IN_PARAGRAPHS,
-          TAG_TYPES_NOT_ALLOWED_IN_PARAGRAPHS_END,
-          tag.type
-        ) == TAG_TYPES_NOT_ALLOWED_IN_PARAGRAPHS_END;
+    case P:
+      return std::find(TAG_TYPES_NOT_ALLOWED_IN_PARAGRAPHS,
+                       TAG_TYPES_NOT_ALLOWED_IN_PARAGRAPHS_END,
+                       tag.type) == TAG_TYPES_NOT_ALLOWED_IN_PARAGRAPHS_END;
 
-      case COLGROUP:
-        return child == COL;
+    case COLGROUP:
+      return child == COL;
 
-      case RB:
-      case RT:
-      case RP:
-        return child != RB && child != RT && child != RP;
+    case RB:
+    case RT:
+    case RP:
+      return child != RB && child != RT && child != RP;
 
-      case OPTGROUP:
-        return child != OPTGROUP;
+    case OPTGROUP:
+      return child != OPTGROUP;
 
-      case TR:
-        return child != TR;
+    case TR:
+      return child != TR;
 
-      case TD:
-      case TH:
-        return child != TD && child != TH && child != TR;
+    case TD:
+    case TH:
+      return child != TD && child != TH && child != TR;
 
-      default:
-        return true;
+    default:
+      return true;
     }
   }
 
   static inline Tag for_name(const string &name) {
-    map<string, TagType>::const_iterator type = TAG_TYPES_BY_TAG_NAME.find(name);
+    map<string, TagType>::const_iterator type =
+        TAG_TYPES_BY_TAG_NAME.find(name);
     if (type != TAG_TYPES_BY_TAG_NAME.end()) {
       return Tag(type->second, string());
     } else {
