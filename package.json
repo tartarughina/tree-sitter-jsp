@@ -19,7 +19,7 @@
     "test": "yarn tree-sitter test",
     "prepack": "yarn tree-sitter generate",
     "release": "standard-version --commit-all",
-    "tree-sitter": "./tree-sitter/target/release/tree-sitter"
+    "tree-sitter": "tree-sitter"
   },
   "standard-version": {
     "preset": "angular",
