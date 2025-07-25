@@ -166,8 +166,7 @@ module.exports = grammar({
     jsp_directive_name: $ => choice(
       'page',
       'taglib',
-      'include',
-      'taglib'
+      'include'
     ),
 
     directive_attribute: $ =>
