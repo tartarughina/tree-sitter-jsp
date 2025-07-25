@@ -2,7 +2,9 @@ module.exports = grammar({
   name: "jsp",
 
   externals: $ => [
-    $.jsp,
+    $.jsp_scriptlet,
+    $.jsp_expression,
+    $._jsp_directive_start,
     $._text_fragment,
     $._interpolation_text,
     $._start_tag_name,
@@ -23,7 +25,9 @@ module.exports = grammar({
     component: $ => repeat(
       choice(
         $.comment,
-        $.jsp,
+        $.jsp_directive,
+        $.jsp_scriptlet,
+        $.jsp_expression,
         $.element,
         $.template_element,
         $.script_element,
@@ -34,7 +38,9 @@ module.exports = grammar({
 
     _node: $ => choice(
       $.comment,
-      $.jsp,
+      $.jsp_directive,
+      $.jsp_scriptlet,
+      $.jsp_expression,
       $.text,
       $.interpolation,
       $.element,
@@ -147,6 +153,21 @@ module.exports = grammar({
       "{{",
       optional(alias($._interpolation_text, $.raw_text)),
       "}}",
+    ),
+
+    // JSP directive with simplified grammar reusing existing attribute rules
+    jsp_directive: $ => seq(
+      $._jsp_directive_start,
+      $.jsp_directive_name,
+      repeat($.attribute),
+      '%>'
+    ),
+
+    jsp_directive_name: $ => choice(
+      'page',
+      'taglib',
+      'include',
+      'taglib'
     ),
 
     directive_attribute: $ =>

@@ -44,7 +44,15 @@
           "named": true
         },
         {
-          "type": "jsp",
+          "type": "jsp_directive",
+          "named": true
+        },
+        {
+          "type": "jsp_expression",
+          "named": true
+        },
+        {
+          "type": "jsp_scriptlet",
           "named": true
         },
         {
@@ -181,7 +189,15 @@
           "named": true
         },
         {
-          "type": "jsp",
+          "type": "jsp_directive",
+          "named": true
+        },
+        {
+          "type": "jsp_expression",
+          "named": true
+        },
+        {
+          "type": "jsp_scriptlet",
           "named": true
         },
         {
@@ -255,6 +271,30 @@
         }
       ]
     }
+  },
+  {
+    "type": "jsp_directive",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "attribute",
+          "named": true
+        },
+        {
+          "type": "jsp_directive_name",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "jsp_directive_name",
+    "named": true,
+    "fields": {}
   },
   {
     "type": "quoted_attribute_value",
@@ -392,7 +432,15 @@
           "named": true
         },
         {
-          "type": "jsp",
+          "type": "jsp_directive",
+          "named": true
+        },
+        {
+          "type": "jsp_expression",
+          "named": true
+        },
+        {
+          "type": "jsp_scriptlet",
           "named": true
         },
         {
@@ -429,6 +477,10 @@
   },
   {
     "type": "\"",
+    "named": false
+  },
+  {
+    "type": "%>",
     "named": false
   },
   {
@@ -496,8 +548,20 @@
     "named": true
   },
   {
-    "type": "jsp",
+    "type": "include",
+    "named": false
+  },
+  {
+    "type": "jsp_expression",
     "named": true
+  },
+  {
+    "type": "jsp_scriptlet",
+    "named": true
+  },
+  {
+    "type": "page",
+    "named": false
   },
   {
     "type": "raw_text",
@@ -506,6 +570,10 @@
   {
     "type": "tag_name",
     "named": true
+  },
+  {
+    "type": "taglib",
+    "named": false
   },
   {
     "type": "{{",

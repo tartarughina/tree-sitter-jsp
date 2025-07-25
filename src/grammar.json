@@ -13,7 +13,15 @@
           },
           {
             "type": "SYMBOL",
-            "name": "jsp"
+            "name": "jsp_directive"
+          },
+          {
+            "type": "SYMBOL",
+            "name": "jsp_scriptlet"
+          },
+          {
+            "type": "SYMBOL",
+            "name": "jsp_expression"
           },
           {
             "type": "SYMBOL",
@@ -47,7 +55,15 @@
         },
         {
           "type": "SYMBOL",
-          "name": "jsp"
+          "name": "jsp_directive"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "jsp_scriptlet"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "jsp_expression"
         },
         {
           "type": "SYMBOL",
@@ -603,6 +619,51 @@
         }
       ]
     },
+    "jsp_directive": {
+      "type": "SEQ",
+      "members": [
+        {
+          "type": "SYMBOL",
+          "name": "_jsp_directive_start"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "jsp_directive_name"
+        },
+        {
+          "type": "REPEAT",
+          "content": {
+            "type": "SYMBOL",
+            "name": "attribute"
+          }
+        },
+        {
+          "type": "STRING",
+          "value": "%>"
+        }
+      ]
+    },
+    "jsp_directive_name": {
+      "type": "CHOICE",
+      "members": [
+        {
+          "type": "STRING",
+          "value": "page"
+        },
+        {
+          "type": "STRING",
+          "value": "taglib"
+        },
+        {
+          "type": "STRING",
+          "value": "include"
+        },
+        {
+          "type": "STRING",
+          "value": "taglib"
+        }
+      ]
+    },
     "directive_attribute": {
       "type": "SEQ",
       "members": [
@@ -854,7 +915,15 @@
   "externals": [
     {
       "type": "SYMBOL",
-      "name": "jsp"
+      "name": "jsp_scriptlet"
+    },
+    {
+      "type": "SYMBOL",
+      "name": "jsp_expression"
+    },
+    {
+      "type": "SYMBOL",
+      "name": "_jsp_directive_start"
     },
     {
       "type": "SYMBOL",
