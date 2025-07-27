@@ -522,14 +522,14 @@ static bool scan_jsp_directive_start(TSLexer *lexer) {
   return true;
 }
 
-static bool scan_jsp_scriptlet(TSLexer *lexer) {
-  // We've already seen <%, now scan until %>
+// Generic JSP scanner that scans until %> and sets the appropriate token
+static bool scan_jsp_until_close(TSLexer *lexer, enum TokenType token_type) {
   while (lexer->lookahead) {
     if (lexer->lookahead == '%') {
       lexer->advance(lexer, false);
       if (lexer->lookahead == '>') {
         lexer->advance(lexer, false);
-        lexer->result_symbol = JSP_SCRIPTLET;
+        lexer->result_symbol = token_type;
         lexer->mark_end(lexer);
         return true;
       }
@@ -538,42 +538,18 @@ static bool scan_jsp_scriptlet(TSLexer *lexer) {
     }
   }
   return false;
+}
+
+static bool scan_jsp_scriptlet(TSLexer *lexer) {
+  return scan_jsp_until_close(lexer, JSP_SCRIPTLET);
 }
 
 static bool scan_jsp_expression(TSLexer *lexer) {
-  // We've already seen <%=, now scan until %>
-  while (lexer->lookahead) {
-    if (lexer->lookahead == '%') {
-      lexer->advance(lexer, false);
-      if (lexer->lookahead == '>') {
-        lexer->advance(lexer, false);
-        lexer->result_symbol = JSP_EXPRESSION;
-        lexer->mark_end(lexer);
-        return true;
-      }
-    } else {
-      lexer->advance(lexer, false);
-    }
-  }
-  return false;
+  return scan_jsp_until_close(lexer, JSP_EXPRESSION);
 }
 
 static bool scan_jsp_declaration(TSLexer *lexer) {
-  // We've already seen <%!, now scan until %>
-  while (lexer->lookahead) {
-    if (lexer->lookahead == '%') {
-      lexer->advance(lexer, false);
-      if (lexer->lookahead == '>') {
-        lexer->advance(lexer, false);
-        lexer->result_symbol = JSP_DECLARATION;
-        lexer->mark_end(lexer);
-        return true;
-      }
-    } else {
-      lexer->advance(lexer, false);
-    }
-  }
-  return false;
+  return scan_jsp_until_close(lexer, JSP_DECLARATION);
 }
 
 static bool scan_jsp_comment(TSLexer *lexer) {
