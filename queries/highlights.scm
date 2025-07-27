@@ -5,5 +5,7 @@
 (quoted_attribute_value) @string
 
 (tag_name) @constant
+((tag_name) @module
+ (#match? @module ":"))
 
 ["<" ">" "/>" "</"] @operator
