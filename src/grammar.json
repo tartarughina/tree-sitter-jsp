@@ -940,6 +940,26 @@
     {
       "type": "PATTERN",
       "value": "\\s+"
+    },
+    {
+      "type": "SYMBOL",
+      "name": "jsp_scriptlet"
+    },
+    {
+      "type": "SYMBOL",
+      "name": "jsp_expression"
+    },
+    {
+      "type": "SYMBOL",
+      "name": "jsp_declaration"
+    },
+    {
+      "type": "SYMBOL",
+      "name": "jsp_comment"
+    },
+    {
+      "type": "SYMBOL",
+      "name": "el_expression"
     }
   ],
   "conflicts": [],

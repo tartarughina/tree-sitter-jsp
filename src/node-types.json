@@ -604,11 +604,13 @@
   },
   {
     "type": "jsp_expression",
-    "named": true
+    "named": true,
+    "extra": true
   },
   {
     "type": "jsp_scriptlet",
-    "named": true
+    "named": true,
+    "extra": true
   },
   {
     "type": "page",

@@ -22,7 +22,14 @@ module.exports = grammar({
     $.comment,
   ],
 
-  extras: $ => [/\s+/],
+  extras: $ => [
+    /\s+/,
+    $.jsp_scriptlet,
+    $.jsp_expression,
+    $.jsp_declaration,
+    $.jsp_comment,
+    $.el_expression,
+  ],
 
   rules: {
     component: $ => repeat(
