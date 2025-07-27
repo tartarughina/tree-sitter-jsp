@@ -10,7 +10,10 @@
 enum TokenType {
   JSP_SCRIPTLET,
   JSP_EXPRESSION,
+  JSP_DECLARATION,
+  JSP_COMMENT,
   JSP_DIRECTIVE_START,
+  EL_EXPRESSION,
   TEXT_FRAGMENT,
   INTERPOLATION_TEXT,
   START_TAG_NAME,
@@ -555,6 +558,77 @@ static bool scan_jsp_expression(TSLexer *lexer) {
   return false;
 }
 
+static bool scan_jsp_declaration(TSLexer *lexer) {
+  // We've already seen <%!, now scan until %>
+  while (lexer->lookahead) {
+    if (lexer->lookahead == '%') {
+      lexer->advance(lexer, false);
+      if (lexer->lookahead == '>') {
+        lexer->advance(lexer, false);
+        lexer->result_symbol = JSP_DECLARATION;
+        lexer->mark_end(lexer);
+        return true;
+      }
+    } else {
+      lexer->advance(lexer, false);
+    }
+  }
+  return false;
+}
+
+static bool scan_jsp_comment(TSLexer *lexer) {
+  // We've already seen <%-, now check for second - and scan until --%>
+  if (lexer->lookahead != '-') {
+    return false;
+  }
+  lexer->advance(lexer, false);
+  
+  // Now scan until we find --%>
+  while (lexer->lookahead) {
+    if (lexer->lookahead == '-') {
+      lexer->advance(lexer, false);
+      if (lexer->lookahead == '-') {
+        lexer->advance(lexer, false);
+        if (lexer->lookahead == '%') {
+          lexer->advance(lexer, false);
+          if (lexer->lookahead == '>') {
+            lexer->advance(lexer, false);
+            lexer->result_symbol = JSP_COMMENT;
+            lexer->mark_end(lexer);
+            return true;
+          }
+          // If we don't find '>', continue scanning
+        }
+        // If we don't find '%', continue scanning
+      }
+      // If we don't find second '-', continue scanning
+    } else {
+      lexer->advance(lexer, false);
+    }
+  }
+  return false;
+}
+
+static bool scan_el_expression(TSLexer *lexer) {
+  // We've already seen ${, now scan until }
+  int brace_count = 1;
+  while (lexer->lookahead && brace_count > 0) {
+    if (lexer->lookahead == '{') {
+      brace_count++;
+    } else if (lexer->lookahead == '}') {
+      brace_count--;
+    }
+    lexer->advance(lexer, false);
+  }
+  
+  if (brace_count == 0) {
+    lexer->result_symbol = EL_EXPRESSION;
+    lexer->mark_end(lexer);
+    return true;
+  }
+  return false;
+}
+
 static bool scan_jsp_construct(TSLexer *lexer) {
   // We've seen <%, now check what follows
   if (lexer->lookahead == '@') {
@@ -563,6 +637,12 @@ static bool scan_jsp_construct(TSLexer *lexer) {
   } else if (lexer->lookahead == '=') {
     lexer->advance(lexer, false);
     return scan_jsp_expression(lexer);
+  } else if (lexer->lookahead == '!') {
+    lexer->advance(lexer, false);
+    return scan_jsp_declaration(lexer);
+  } else if (lexer->lookahead == '-') {
+    lexer->advance(lexer, false);
+    return scan_jsp_comment(lexer);
   } else {
     return scan_jsp_scriptlet(lexer);
   }
@@ -747,7 +827,9 @@ static bool scanner_scan(Scanner *scanner, TSLexer *lexer,
 
   if (valid_symbols[RAW_TEXT] && !valid_symbols[START_TAG_NAME] &&
       !valid_symbols[END_TAG_NAME] && !valid_symbols[JSP_DIRECTIVE_START] &&
-      !valid_symbols[JSP_SCRIPTLET] && !valid_symbols[JSP_EXPRESSION]) {
+      !valid_symbols[JSP_SCRIPTLET] && !valid_symbols[JSP_EXPRESSION] &&
+      !valid_symbols[JSP_DECLARATION] && !valid_symbols[JSP_COMMENT] &&
+      !valid_symbols[EL_EXPRESSION]) {
     return scan_raw_text(scanner, lexer);
   }
 
@@ -768,6 +850,16 @@ static bool scanner_scan(Scanner *scanner, TSLexer *lexer,
 
     if (valid_symbols[IMPLICIT_END_TAG]) {
       return scan_implicit_end_tag(scanner, lexer);
+    }
+    break;
+
+  case '$':
+    if (valid_symbols[EL_EXPRESSION]) {
+      lexer->advance(lexer, false);
+      if (lexer->lookahead == '{') {
+        lexer->advance(lexer, false);
+        return scan_el_expression(lexer);
+      }
     }
     break;
 
@@ -830,6 +922,10 @@ bool tree_sitter_jsp_external_scanner_scan(void *payload, TSLexer *lexer,
           lexer->mark_end(lexer);
           break;
         } else if (lexer->lookahead == '<') {
+          lexer->mark_end(lexer);
+          break;
+        } else if (lexer->lookahead == '$') {
+          // Check for EL expression start
           lexer->mark_end(lexer);
           break;
         } else if (lexer->lookahead == '{') {

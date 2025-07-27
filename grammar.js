@@ -4,7 +4,10 @@ module.exports = grammar({
   externals: $ => [
     $.jsp_scriptlet,
     $.jsp_expression,
+    $._jsp_declaration,
+    $._jsp_comment,
     $._jsp_directive_start,
+    $._el_expression,
     $._text_fragment,
     $._interpolation_text,
     $._start_tag_name,
@@ -28,6 +31,9 @@ module.exports = grammar({
         $.jsp_directive,
         $.jsp_scriptlet,
         $.jsp_expression,
+        $.jsp_declaration,
+        $.jsp_comment,
+        $.el_expression,
         $.element,
         $.template_element,
         $.script_element,
@@ -41,6 +47,9 @@ module.exports = grammar({
       $.jsp_directive,
       $.jsp_scriptlet,
       $.jsp_expression,
+      $.jsp_declaration,
+      $.jsp_comment,
+      $.el_expression,
       $.text,
       $.interpolation,
       $.element,
@@ -168,6 +177,15 @@ module.exports = grammar({
       'taglib',
       'include'
     ),
+
+    // JSP declaration for declaring variables and methods
+    jsp_declaration: $ => $._jsp_declaration,
+
+    // JSP comment (different from HTML comment)
+    jsp_comment: $ => $._jsp_comment,
+
+    // Expression Language for accessing data and functions
+    el_expression: $ => $._el_expression,
 
     directive_attribute: $ =>
       seq(

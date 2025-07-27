@@ -40,7 +40,19 @@
           "named": true
         },
         {
+          "type": "el_expression",
+          "named": true
+        },
+        {
           "type": "element",
+          "named": true
+        },
+        {
+          "type": "jsp_comment",
+          "named": true
+        },
+        {
+          "type": "jsp_declaration",
           "named": true
         },
         {
@@ -161,6 +173,11 @@
     }
   },
   {
+    "type": "el_expression",
+    "named": true,
+    "fields": {}
+  },
+  {
     "type": "element",
     "named": true,
     "fields": {},
@@ -170,6 +187,10 @@
       "types": [
         {
           "type": "comment",
+          "named": true
+        },
+        {
+          "type": "el_expression",
           "named": true
         },
         {
@@ -186,6 +207,14 @@
         },
         {
           "type": "interpolation",
+          "named": true
+        },
+        {
+          "type": "jsp_comment",
+          "named": true
+        },
+        {
+          "type": "jsp_declaration",
           "named": true
         },
         {
@@ -271,6 +300,16 @@
         }
       ]
     }
+  },
+  {
+    "type": "jsp_comment",
+    "named": true,
+    "fields": {}
+  },
+  {
+    "type": "jsp_declaration",
+    "named": true,
+    "fields": {}
   },
   {
     "type": "jsp_directive",
@@ -416,6 +455,10 @@
           "named": true
         },
         {
+          "type": "el_expression",
+          "named": true
+        },
+        {
           "type": "element",
           "named": true
         },
@@ -429,6 +472,14 @@
         },
         {
           "type": "interpolation",
+          "named": true
+        },
+        {
+          "type": "jsp_comment",
+          "named": true
+        },
+        {
+          "type": "jsp_declaration",
           "named": true
         },
         {

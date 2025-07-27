@@ -25,6 +25,18 @@
           },
           {
             "type": "SYMBOL",
+            "name": "jsp_declaration"
+          },
+          {
+            "type": "SYMBOL",
+            "name": "jsp_comment"
+          },
+          {
+            "type": "SYMBOL",
+            "name": "el_expression"
+          },
+          {
+            "type": "SYMBOL",
             "name": "element"
           },
           {
@@ -64,6 +76,18 @@
         {
           "type": "SYMBOL",
           "name": "jsp_expression"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "jsp_declaration"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "jsp_comment"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "el_expression"
         },
         {
           "type": "SYMBOL",
@@ -657,12 +681,20 @@
         {
           "type": "STRING",
           "value": "include"
-        },
-        {
-          "type": "STRING",
-          "value": "taglib"
         }
       ]
+    },
+    "jsp_declaration": {
+      "type": "SYMBOL",
+      "name": "_jsp_declaration"
+    },
+    "jsp_comment": {
+      "type": "SYMBOL",
+      "name": "_jsp_comment"
+    },
+    "el_expression": {
+      "type": "SYMBOL",
+      "name": "_el_expression"
     },
     "directive_attribute": {
       "type": "SEQ",
@@ -923,7 +955,19 @@
     },
     {
       "type": "SYMBOL",
+      "name": "_jsp_declaration"
+    },
+    {
+      "type": "SYMBOL",
+      "name": "_jsp_comment"
+    },
+    {
+      "type": "SYMBOL",
       "name": "_jsp_directive_start"
+    },
+    {
+      "type": "SYMBOL",
+      "name": "_el_expression"
     },
     {
       "type": "SYMBOL",
