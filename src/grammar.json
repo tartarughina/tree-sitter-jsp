@@ -549,13 +549,8 @@
               "type": "CHOICE",
               "members": [
                 {
-                  "type": "ALIAS",
-                  "content": {
-                    "type": "PATTERN",
-                    "value": "[^']+"
-                  },
-                  "named": true,
-                  "value": "attribute_value"
+                  "type": "SYMBOL",
+                  "name": "_attribute_content_single"
                 },
                 {
                   "type": "BLANK"
@@ -579,13 +574,8 @@
               "type": "CHOICE",
               "members": [
                 {
-                  "type": "ALIAS",
-                  "content": {
-                    "type": "PATTERN",
-                    "value": "[^\"]+"
-                  },
-                  "named": true,
-                  "value": "attribute_value"
+                  "type": "SYMBOL",
+                  "name": "_attribute_content_double"
                 },
                 {
                   "type": "BLANK"
@@ -599,6 +589,48 @@
           ]
         }
       ]
+    },
+    "_attribute_content_single": {
+      "type": "REPEAT1",
+      "content": {
+        "type": "CHOICE",
+        "members": [
+          {
+            "type": "ALIAS",
+            "content": {
+              "type": "PATTERN",
+              "value": "[^'$]+"
+            },
+            "named": true,
+            "value": "attribute_value"
+          },
+          {
+            "type": "SYMBOL",
+            "name": "el_expression"
+          }
+        ]
+      }
+    },
+    "_attribute_content_double": {
+      "type": "REPEAT1",
+      "content": {
+        "type": "CHOICE",
+        "members": [
+          {
+            "type": "ALIAS",
+            "content": {
+              "type": "PATTERN",
+              "value": "[^\"$]+"
+            },
+            "named": true,
+            "value": "attribute_value"
+          },
+          {
+            "type": "SYMBOL",
+            "name": "el_expression"
+          }
+        ]
+      }
     },
     "text": {
       "type": "CHOICE",
@@ -956,6 +988,10 @@
     {
       "type": "SYMBOL",
       "name": "jsp_comment"
+    },
+    {
+      "type": "SYMBOL",
+      "name": "comment"
     },
     {
       "type": "SYMBOL",

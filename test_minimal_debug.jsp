@@ -1,0 +1,2 @@
+<%-- comment --%>
+<div><%-- comment --%></div>

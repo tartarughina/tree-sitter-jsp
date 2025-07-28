@@ -340,11 +340,15 @@
     "named": true,
     "fields": {},
     "children": {
-      "multiple": false,
+      "multiple": true,
       "required": false,
       "types": [
         {
           "type": "attribute_value",
+          "named": true
+        },
+        {
+          "type": "el_expression",
           "named": true
         }
       ]
@@ -584,7 +588,8 @@
   },
   {
     "type": "comment",
-    "named": true
+    "named": true,
+    "extra": true
   },
   {
     "type": "directive_dynamic_argument_value",

@@ -28,6 +28,7 @@ module.exports = grammar({
     $.jsp_expression,
     $.jsp_declaration,
     $.jsp_comment,
+    $.comment,
     $.el_expression,
   ],
 
@@ -159,9 +160,24 @@ module.exports = grammar({
 
     quoted_attribute_value: $ =>
       choice(
-        seq("'", optional(alias(/[^']+/, $.attribute_value)), "'"),
-        seq('"', optional(alias(/[^"]+/, $.attribute_value)), '"'),
+        seq("'", optional($._attribute_content_single), "'"),
+        seq('"', optional($._attribute_content_double), '"'),
       ),
+
+    // Attribute content can contain mixed text and EL expressions
+    _attribute_content_single: $ => repeat1(
+      choice(
+        alias(/[^'$]+/, $.attribute_value),
+        $.el_expression,
+      )
+    ),
+
+    _attribute_content_double: $ => repeat1(
+      choice(
+        alias(/[^"$]+/, $.attribute_value),
+        $.el_expression,
+      )
+    ),
 
     text: $ => choice($._text_fragment, "{{"),
 
@@ -179,7 +195,7 @@ module.exports = grammar({
       '%>'
     ),
 
-    jsp_directive_name: $ => choice(
+    jsp_directive_name: _ => choice(
       'page',
       'taglib',
       'include'

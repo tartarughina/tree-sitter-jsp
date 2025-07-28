@@ -53,7 +53,6 @@ typedef enum {
   TRACK,
   WBR,
   END_OF_VOID_TAGS,
-
   A,
   ABBR,
   ADDRESS,
@@ -156,7 +155,6 @@ typedef enum {
   UL,
   VAR,
   VIDEO,
-
   CUSTOM,
 } TagType;
 
@@ -206,9 +204,7 @@ static bool tag_eq(const Tag *a, const Tag *b) {
   return true;
 }
 
-static bool tag_is_void(const Tag *tag) {
-  return tag->type < END_OF_VOID_TAGS;
-}
+static bool tag_is_void(const Tag *tag) { return tag->type < END_OF_VOID_TAGS; }
 
 static TagType get_tag_type_for_name(const char *name) {
   // Convert to uppercase for comparison
@@ -220,134 +216,259 @@ static TagType get_tag_type_for_name(const char *name) {
   upper_name[len] = '\0';
 
   TagType result = CUSTOM;
-  
+
   // Check known tag types - void tags first
-  if (strcmp(upper_name, "AREA") == 0) result = AREA;
-  else if (strcmp(upper_name, "BASE") == 0) result = BASE;
-  else if (strcmp(upper_name, "BASEFONT") == 0) result = BASEFONT;
-  else if (strcmp(upper_name, "BGSOUND") == 0) result = BGSOUND;
-  else if (strcmp(upper_name, "BR") == 0) result = BR;
-  else if (strcmp(upper_name, "COL") == 0) result = COL;
-  else if (strcmp(upper_name, "COMMAND") == 0) result = COMMAND;
-  else if (strcmp(upper_name, "EMBED") == 0) result = EMBED;
-  else if (strcmp(upper_name, "FRAME") == 0) result = FRAME;
-  else if (strcmp(upper_name, "HR") == 0) result = HR;
-  else if (strcmp(upper_name, "IMAGE") == 0) result = IMAGE;
-  else if (strcmp(upper_name, "IMG") == 0) result = IMG;
-  else if (strcmp(upper_name, "INPUT") == 0) result = INPUT;
-  else if (strcmp(upper_name, "ISINDEX") == 0) result = ISINDEX;
-  else if (strcmp(upper_name, "KEYGEN") == 0) result = KEYGEN;
-  else if (strcmp(upper_name, "LINK") == 0) result = LINK;
-  else if (strcmp(upper_name, "MENUITEM") == 0) result = MENUITEM;
-  else if (strcmp(upper_name, "META") == 0) result = META;
-  else if (strcmp(upper_name, "NEXTID") == 0) result = NEXTID;
-  else if (strcmp(upper_name, "PARAM") == 0) result = PARAM;
-  else if (strcmp(upper_name, "SOURCE") == 0) result = SOURCE;
-  else if (strcmp(upper_name, "TRACK") == 0) result = TRACK;
-  else if (strcmp(upper_name, "WBR") == 0) result = WBR;
+  if (strcmp(upper_name, "AREA") == 0)
+    result = AREA;
+  else if (strcmp(upper_name, "BASE") == 0)
+    result = BASE;
+  else if (strcmp(upper_name, "BASEFONT") == 0)
+    result = BASEFONT;
+  else if (strcmp(upper_name, "BGSOUND") == 0)
+    result = BGSOUND;
+  else if (strcmp(upper_name, "BR") == 0)
+    result = BR;
+  else if (strcmp(upper_name, "COL") == 0)
+    result = COL;
+  else if (strcmp(upper_name, "COMMAND") == 0)
+    result = COMMAND;
+  else if (strcmp(upper_name, "EMBED") == 0)
+    result = EMBED;
+  else if (strcmp(upper_name, "FRAME") == 0)
+    result = FRAME;
+  else if (strcmp(upper_name, "HR") == 0)
+    result = HR;
+  else if (strcmp(upper_name, "IMAGE") == 0)
+    result = IMAGE;
+  else if (strcmp(upper_name, "IMG") == 0)
+    result = IMG;
+  else if (strcmp(upper_name, "INPUT") == 0)
+    result = INPUT;
+  else if (strcmp(upper_name, "ISINDEX") == 0)
+    result = ISINDEX;
+  else if (strcmp(upper_name, "KEYGEN") == 0)
+    result = KEYGEN;
+  else if (strcmp(upper_name, "LINK") == 0)
+    result = LINK;
+  else if (strcmp(upper_name, "MENUITEM") == 0)
+    result = MENUITEM;
+  else if (strcmp(upper_name, "META") == 0)
+    result = META;
+  else if (strcmp(upper_name, "NEXTID") == 0)
+    result = NEXTID;
+  else if (strcmp(upper_name, "PARAM") == 0)
+    result = PARAM;
+  else if (strcmp(upper_name, "SOURCE") == 0)
+    result = SOURCE;
+  else if (strcmp(upper_name, "TRACK") == 0)
+    result = TRACK;
+  else if (strcmp(upper_name, "WBR") == 0)
+    result = WBR;
   // Non-void tags
-  else if (strcmp(upper_name, "A") == 0) result = A;
-  else if (strcmp(upper_name, "ABBR") == 0) result = ABBR;
-  else if (strcmp(upper_name, "ADDRESS") == 0) result = ADDRESS;
-  else if (strcmp(upper_name, "ARTICLE") == 0) result = ARTICLE;
-  else if (strcmp(upper_name, "ASIDE") == 0) result = ASIDE;
-  else if (strcmp(upper_name, "AUDIO") == 0) result = AUDIO;
-  else if (strcmp(upper_name, "B") == 0) result = B;
-  else if (strcmp(upper_name, "BDI") == 0) result = BDI;
-  else if (strcmp(upper_name, "BDO") == 0) result = BDO;
-  else if (strcmp(upper_name, "BLOCKQUOTE") == 0) result = BLOCKQUOTE;
-  else if (strcmp(upper_name, "BODY") == 0) result = BODY;
-  else if (strcmp(upper_name, "BUTTON") == 0) result = BUTTON;
-  else if (strcmp(upper_name, "CANVAS") == 0) result = CANVAS;
-  else if (strcmp(upper_name, "CAPTION") == 0) result = CAPTION;
-  else if (strcmp(upper_name, "CITE") == 0) result = CITE;
-  else if (strcmp(upper_name, "CODE") == 0) result = CODE;
-  else if (strcmp(upper_name, "COLGROUP") == 0) result = COLGROUP;
-  else if (strcmp(upper_name, "DATA") == 0) result = DATA;
-  else if (strcmp(upper_name, "DATALIST") == 0) result = DATALIST;
-  else if (strcmp(upper_name, "DD") == 0) result = DD;
-  else if (strcmp(upper_name, "DEL") == 0) result = DEL;
-  else if (strcmp(upper_name, "DETAILS") == 0) result = DETAILS;
-  else if (strcmp(upper_name, "DFN") == 0) result = DFN;
-  else if (strcmp(upper_name, "DIALOG") == 0) result = DIALOG;
-  else if (strcmp(upper_name, "DIV") == 0) result = DIV;
-  else if (strcmp(upper_name, "DL") == 0) result = DL;
-  else if (strcmp(upper_name, "DT") == 0) result = DT;
-  else if (strcmp(upper_name, "EM") == 0) result = EM;
-  else if (strcmp(upper_name, "FIELDSET") == 0) result = FIELDSET;
-  else if (strcmp(upper_name, "FIGCAPTION") == 0) result = FIGCAPTION;
-  else if (strcmp(upper_name, "FIGURE") == 0) result = FIGURE;
-  else if (strcmp(upper_name, "FOOTER") == 0) result = FOOTER;
-  else if (strcmp(upper_name, "FORM") == 0) result = FORM;
-  else if (strcmp(upper_name, "H1") == 0) result = H1;
-  else if (strcmp(upper_name, "H2") == 0) result = H2;
-  else if (strcmp(upper_name, "H3") == 0) result = H3;
-  else if (strcmp(upper_name, "H4") == 0) result = H4;
-  else if (strcmp(upper_name, "H5") == 0) result = H5;
-  else if (strcmp(upper_name, "H6") == 0) result = H6;
-  else if (strcmp(upper_name, "HEAD") == 0) result = HEAD;
-  else if (strcmp(upper_name, "HEADER") == 0) result = HEADER;
-  else if (strcmp(upper_name, "HGROUP") == 0) result = HGROUP;
-  else if (strcmp(upper_name, "HTML") == 0) result = HTML;
-  else if (strcmp(upper_name, "I") == 0) result = I;
-  else if (strcmp(upper_name, "IFRAME") == 0) result = IFRAME;
-  else if (strcmp(upper_name, "INS") == 0) result = INS;
-  else if (strcmp(upper_name, "KBD") == 0) result = KBD;
-  else if (strcmp(upper_name, "LABEL") == 0) result = LABEL;
-  else if (strcmp(upper_name, "LEGEND") == 0) result = LEGEND;
-  else if (strcmp(upper_name, "LI") == 0) result = LI;
-  else if (strcmp(upper_name, "MAIN") == 0) result = MAIN;
-  else if (strcmp(upper_name, "MAP") == 0) result = MAP;
-  else if (strcmp(upper_name, "MARK") == 0) result = MARK;
-  else if (strcmp(upper_name, "MATH") == 0) result = MATH;
-  else if (strcmp(upper_name, "MENU") == 0) result = MENU;
-  else if (strcmp(upper_name, "METER") == 0) result = METER;
-  else if (strcmp(upper_name, "NAV") == 0) result = NAV;
-  else if (strcmp(upper_name, "NOSCRIPT") == 0) result = NOSCRIPT;
-  else if (strcmp(upper_name, "OBJECT") == 0) result = OBJECT;
-  else if (strcmp(upper_name, "OL") == 0) result = OL;
-  else if (strcmp(upper_name, "OPTGROUP") == 0) result = OPTGROUP;
-  else if (strcmp(upper_name, "OPTION") == 0) result = OPTION;
-  else if (strcmp(upper_name, "OUTPUT") == 0) result = OUTPUT;
-  else if (strcmp(upper_name, "P") == 0) result = P;
-  else if (strcmp(upper_name, "PICTURE") == 0) result = PICTURE;
-  else if (strcmp(upper_name, "PRE") == 0) result = PRE;
-  else if (strcmp(upper_name, "PROGRESS") == 0) result = PROGRESS;
-  else if (strcmp(upper_name, "Q") == 0) result = Q;
-  else if (strcmp(upper_name, "RB") == 0) result = RB;
-  else if (strcmp(upper_name, "RP") == 0) result = RP;
-  else if (strcmp(upper_name, "RT") == 0) result = RT;
-  else if (strcmp(upper_name, "RTC") == 0) result = RTC;
-  else if (strcmp(upper_name, "RUBY") == 0) result = RUBY;
-  else if (strcmp(upper_name, "S") == 0) result = S;
-  else if (strcmp(upper_name, "SAMP") == 0) result = SAMP;
-  else if (strcmp(upper_name, "SCRIPT") == 0) result = SCRIPT;
-  else if (strcmp(upper_name, "SECTION") == 0) result = SECTION;
-  else if (strcmp(upper_name, "SELECT") == 0) result = SELECT;
-  else if (strcmp(upper_name, "SLOT") == 0) result = SLOT;
-  else if (strcmp(upper_name, "SMALL") == 0) result = SMALL;
-  else if (strcmp(upper_name, "SPAN") == 0) result = SPAN;
-  else if (strcmp(upper_name, "STRONG") == 0) result = STRONG;
-  else if (strcmp(upper_name, "STYLE") == 0) result = STYLE;
-  else if (strcmp(upper_name, "SUB") == 0) result = SUB;
-  else if (strcmp(upper_name, "SUMMARY") == 0) result = SUMMARY;
-  else if (strcmp(upper_name, "SUP") == 0) result = SUP;
-  else if (strcmp(upper_name, "SVG") == 0) result = SVG;
-  else if (strcmp(upper_name, "TABLE") == 0) result = TABLE;
-  else if (strcmp(upper_name, "TBODY") == 0) result = TBODY;
-  else if (strcmp(upper_name, "TD") == 0) result = TD;
-  else if (strcmp(upper_name, "TEMPLATE") == 0) result = TEMPLATE;
-  else if (strcmp(upper_name, "TEXTAREA") == 0) result = TEXTAREA;
-  else if (strcmp(upper_name, "TFOOT") == 0) result = TFOOT;
-  else if (strcmp(upper_name, "TH") == 0) result = TH;
-  else if (strcmp(upper_name, "THEAD") == 0) result = THEAD;
-  else if (strcmp(upper_name, "TIME") == 0) result = TIME;
-  else if (strcmp(upper_name, "TITLE") == 0) result = TITLE;
-  else if (strcmp(upper_name, "TR") == 0) result = TR;
-  else if (strcmp(upper_name, "U") == 0) result = U;
-  else if (strcmp(upper_name, "UL") == 0) result = UL;
-  else if (strcmp(upper_name, "VAR") == 0) result = VAR;
-  else if (strcmp(upper_name, "VIDEO") == 0) result = VIDEO;
+  else if (strcmp(upper_name, "A") == 0)
+    result = A;
+  else if (strcmp(upper_name, "ABBR") == 0)
+    result = ABBR;
+  else if (strcmp(upper_name, "ADDRESS") == 0)
+    result = ADDRESS;
+  else if (strcmp(upper_name, "ARTICLE") == 0)
+    result = ARTICLE;
+  else if (strcmp(upper_name, "ASIDE") == 0)
+    result = ASIDE;
+  else if (strcmp(upper_name, "AUDIO") == 0)
+    result = AUDIO;
+  else if (strcmp(upper_name, "B") == 0)
+    result = B;
+  else if (strcmp(upper_name, "BDI") == 0)
+    result = BDI;
+  else if (strcmp(upper_name, "BDO") == 0)
+    result = BDO;
+  else if (strcmp(upper_name, "BLOCKQUOTE") == 0)
+    result = BLOCKQUOTE;
+  else if (strcmp(upper_name, "BODY") == 0)
+    result = BODY;
+  else if (strcmp(upper_name, "BUTTON") == 0)
+    result = BUTTON;
+  else if (strcmp(upper_name, "CANVAS") == 0)
+    result = CANVAS;
+  else if (strcmp(upper_name, "CAPTION") == 0)
+    result = CAPTION;
+  else if (strcmp(upper_name, "CITE") == 0)
+    result = CITE;
+  else if (strcmp(upper_name, "CODE") == 0)
+    result = CODE;
+  else if (strcmp(upper_name, "COLGROUP") == 0)
+    result = COLGROUP;
+  else if (strcmp(upper_name, "DATA") == 0)
+    result = DATA;
+  else if (strcmp(upper_name, "DATALIST") == 0)
+    result = DATALIST;
+  else if (strcmp(upper_name, "DD") == 0)
+    result = DD;
+  else if (strcmp(upper_name, "DEL") == 0)
+    result = DEL;
+  else if (strcmp(upper_name, "DETAILS") == 0)
+    result = DETAILS;
+  else if (strcmp(upper_name, "DFN") == 0)
+    result = DFN;
+  else if (strcmp(upper_name, "DIALOG") == 0)
+    result = DIALOG;
+  else if (strcmp(upper_name, "DIV") == 0)
+    result = DIV;
+  else if (strcmp(upper_name, "DL") == 0)
+    result = DL;
+  else if (strcmp(upper_name, "DT") == 0)
+    result = DT;
+  else if (strcmp(upper_name, "EM") == 0)
+    result = EM;
+  else if (strcmp(upper_name, "FIELDSET") == 0)
+    result = FIELDSET;
+  else if (strcmp(upper_name, "FIGCAPTION") == 0)
+    result = FIGCAPTION;
+  else if (strcmp(upper_name, "FIGURE") == 0)
+    result = FIGURE;
+  else if (strcmp(upper_name, "FOOTER") == 0)
+    result = FOOTER;
+  else if (strcmp(upper_name, "FORM") == 0)
+    result = FORM;
+  else if (strcmp(upper_name, "H1") == 0)
+    result = H1;
+  else if (strcmp(upper_name, "H2") == 0)
+    result = H2;
+  else if (strcmp(upper_name, "H3") == 0)
+    result = H3;
+  else if (strcmp(upper_name, "H4") == 0)
+    result = H4;
+  else if (strcmp(upper_name, "H5") == 0)
+    result = H5;
+  else if (strcmp(upper_name, "H6") == 0)
+    result = H6;
+  else if (strcmp(upper_name, "HEAD") == 0)
+    result = HEAD;
+  else if (strcmp(upper_name, "HEADER") == 0)
+    result = HEADER;
+  else if (strcmp(upper_name, "HGROUP") == 0)
+    result = HGROUP;
+  else if (strcmp(upper_name, "HTML") == 0)
+    result = HTML;
+  else if (strcmp(upper_name, "I") == 0)
+    result = I;
+  else if (strcmp(upper_name, "IFRAME") == 0)
+    result = IFRAME;
+  else if (strcmp(upper_name, "INS") == 0)
+    result = INS;
+  else if (strcmp(upper_name, "KBD") == 0)
+    result = KBD;
+  else if (strcmp(upper_name, "LABEL") == 0)
+    result = LABEL;
+  else if (strcmp(upper_name, "LEGEND") == 0)
+    result = LEGEND;
+  else if (strcmp(upper_name, "LI") == 0)
+    result = LI;
+  else if (strcmp(upper_name, "MAIN") == 0)
+    result = MAIN;
+  else if (strcmp(upper_name, "MAP") == 0)
+    result = MAP;
+  else if (strcmp(upper_name, "MARK") == 0)
+    result = MARK;
+  else if (strcmp(upper_name, "MATH") == 0)
+    result = MATH;
+  else if (strcmp(upper_name, "MENU") == 0)
+    result = MENU;
+  else if (strcmp(upper_name, "METER") == 0)
+    result = METER;
+  else if (strcmp(upper_name, "NAV") == 0)
+    result = NAV;
+  else if (strcmp(upper_name, "NOSCRIPT") == 0)
+    result = NOSCRIPT;
+  else if (strcmp(upper_name, "OBJECT") == 0)
+    result = OBJECT;
+  else if (strcmp(upper_name, "OL") == 0)
+    result = OL;
+  else if (strcmp(upper_name, "OPTGROUP") == 0)
+    result = OPTGROUP;
+  else if (strcmp(upper_name, "OPTION") == 0)
+    result = OPTION;
+  else if (strcmp(upper_name, "OUTPUT") == 0)
+    result = OUTPUT;
+  else if (strcmp(upper_name, "P") == 0)
+    result = P;
+  else if (strcmp(upper_name, "PICTURE") == 0)
+    result = PICTURE;
+  else if (strcmp(upper_name, "PRE") == 0)
+    result = PRE;
+  else if (strcmp(upper_name, "PROGRESS") == 0)
+    result = PROGRESS;
+  else if (strcmp(upper_name, "Q") == 0)
+    result = Q;
+  else if (strcmp(upper_name, "RB") == 0)
+    result = RB;
+  else if (strcmp(upper_name, "RP") == 0)
+    result = RP;
+  else if (strcmp(upper_name, "RT") == 0)
+    result = RT;
+  else if (strcmp(upper_name, "RTC") == 0)
+    result = RTC;
+  else if (strcmp(upper_name, "RUBY") == 0)
+    result = RUBY;
+  else if (strcmp(upper_name, "S") == 0)
+    result = S;
+  else if (strcmp(upper_name, "SAMP") == 0)
+    result = SAMP;
+  else if (strcmp(upper_name, "SCRIPT") == 0)
+    result = SCRIPT;
+  else if (strcmp(upper_name, "SECTION") == 0)
+    result = SECTION;
+  else if (strcmp(upper_name, "SELECT") == 0)
+    result = SELECT;
+  else if (strcmp(upper_name, "SLOT") == 0)
+    result = SLOT;
+  else if (strcmp(upper_name, "SMALL") == 0)
+    result = SMALL;
+  else if (strcmp(upper_name, "SPAN") == 0)
+    result = SPAN;
+  else if (strcmp(upper_name, "STRONG") == 0)
+    result = STRONG;
+  else if (strcmp(upper_name, "STYLE") == 0)
+    result = STYLE;
+  else if (strcmp(upper_name, "SUB") == 0)
+    result = SUB;
+  else if (strcmp(upper_name, "SUMMARY") == 0)
+    result = SUMMARY;
+  else if (strcmp(upper_name, "SUP") == 0)
+    result = SUP;
+  else if (strcmp(upper_name, "SVG") == 0)
+    result = SVG;
+  else if (strcmp(upper_name, "TABLE") == 0)
+    result = TABLE;
+  else if (strcmp(upper_name, "TBODY") == 0)
+    result = TBODY;
+  else if (strcmp(upper_name, "TD") == 0)
+    result = TD;
+  else if (strcmp(upper_name, "TEMPLATE") == 0)
+    result = TEMPLATE;
+  else if (strcmp(upper_name, "TEXTAREA") == 0)
+    result = TEXTAREA;
+  else if (strcmp(upper_name, "TFOOT") == 0)
+    result = TFOOT;
+  else if (strcmp(upper_name, "TH") == 0)
+    result = TH;
+  else if (strcmp(upper_name, "THEAD") == 0)
+    result = THEAD;
+  else if (strcmp(upper_name, "TIME") == 0)
+    result = TIME;
+  else if (strcmp(upper_name, "TITLE") == 0)
+    result = TITLE;
+  else if (strcmp(upper_name, "TR") == 0)
+    result = TR;
+  else if (strcmp(upper_name, "U") == 0)
+    result = U;
+  else if (strcmp(upper_name, "UL") == 0)
+    result = UL;
+  else if (strcmp(upper_name, "VAR") == 0)
+    result = VAR;
+  else if (strcmp(upper_name, "VIDEO") == 0)
+    result = VIDEO;
 
   ts_free(upper_name);
   return result;
@@ -356,14 +477,14 @@ static TagType get_tag_type_for_name(const char *name) {
 static Tag tag_for_name(const char *name) {
   Tag tag;
   tag_init(&tag);
-  
+
   TagType type = get_tag_type_for_name(name);
   tag.type = type;
-  
+
   if (type == CUSTOM) {
     tag_set_name(&tag, name, strlen(name));
   }
-  
+
   return tag;
 }
 
@@ -381,10 +502,10 @@ static bool tag_can_contain(const Tag *parent, const Tag *child) {
   case P: {
     // Tags not allowed in paragraphs
     TagType not_allowed[] = {
-      ADDRESS, ARTICLE, ASIDE, BLOCKQUOTE, DETAILS, DIV, DL,
-      FIELDSET, FIGCAPTION, FIGURE, FOOTER, FORM, H1, H2,
-      H3, H4, H5, H6, HEADER, HR, MAIN, NAV, OL, P, PRE, SECTION
-    };
+        ADDRESS,  ARTICLE,    ASIDE,  BLOCKQUOTE, DETAILS, DIV, DL,
+        FIELDSET, FIGCAPTION, FIGURE, FOOTER,     FORM,    H1,  H2,
+        H3,       H4,         H5,     H6,         HEADER,  HR,  MAIN,
+        NAV,      OL,         P,      PRE,        SECTION};
     size_t count = sizeof(not_allowed) / sizeof(TagType);
     for (size_t i = 0; i < count; i++) {
       if (child_type == not_allowed[i]) {
@@ -558,7 +679,7 @@ static bool scan_jsp_comment(TSLexer *lexer) {
     return false;
   }
   lexer->advance(lexer, false);
-  
+
   // Now scan until we find --%>
   while (lexer->lookahead) {
     if (lexer->lookahead == '-') {
@@ -596,7 +717,7 @@ static bool scan_el_expression(TSLexer *lexer) {
     }
     lexer->advance(lexer, false);
   }
-  
+
   if (brace_count == 0) {
     lexer->result_symbol = EL_EXPRESSION;
     lexer->mark_end(lexer);
@@ -863,9 +984,7 @@ static bool scanner_scan(Scanner *scanner, TSLexer *lexer,
 }
 
 // External scanner interface
-void *tree_sitter_jsp_external_scanner_create(void) { 
-  return scanner_new(); 
-}
+void *tree_sitter_jsp_external_scanner_create(void) { return scanner_new(); }
 
 void tree_sitter_jsp_external_scanner_destroy(void *payload) {
   Scanner *scanner = (Scanner *)payload;
@@ -901,9 +1020,18 @@ bool tree_sitter_jsp_external_scanner_scan(void *payload, TSLexer *lexer,
           lexer->mark_end(lexer);
           break;
         } else if (lexer->lookahead == '$') {
-          // Check for EL expression start
-          lexer->mark_end(lexer);
-          break;
+          // Check for EL expression start - only stop if followed by {
+          TSLexer saved_lexer = *lexer;
+          lexer->advance(lexer, false);
+          if (lexer->lookahead == '{') {
+            // This is an EL expression, restore position and break
+            *lexer = saved_lexer;
+            lexer->mark_end(lexer);
+            break;
+          } else {
+            // This is just a $ character, continue scanning
+            // Note: lexer is already advanced, so continue from current position
+          }
         } else if (lexer->lookahead == '{') {
           lexer->mark_end(lexer);
           lexer->advance(lexer, false);
