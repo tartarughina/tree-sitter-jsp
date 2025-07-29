@@ -16,6 +16,10 @@
           "named": true
         },
         {
+          "type": "el_expression",
+          "named": true
+        },
+        {
           "type": "quoted_attribute_value",
           "named": true
         }
@@ -588,8 +592,7 @@
   },
   {
     "type": "comment",
-    "named": true,
-    "extra": true
+    "named": true
   },
   {
     "type": "directive_dynamic_argument_value",

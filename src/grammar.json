@@ -515,6 +515,10 @@
                     {
                       "type": "SYMBOL",
                       "name": "quoted_attribute_value"
+                    },
+                    {
+                      "type": "SYMBOL",
+                      "name": "el_expression"
                     }
                   ]
                 }
@@ -988,14 +992,6 @@
     {
       "type": "SYMBOL",
       "name": "jsp_comment"
-    },
-    {
-      "type": "SYMBOL",
-      "name": "comment"
-    },
-    {
-      "type": "SYMBOL",
-      "name": "el_expression"
     }
   ],
   "conflicts": [],

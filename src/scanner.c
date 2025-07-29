@@ -779,11 +779,14 @@ static bool scan_raw_text(Scanner *scanner, TSLexer *lexer) {
   if (scanner->tags.size == 0)
     return false;
 
+  // Check if we're inside a script or style tag
+  Tag *current_tag = &scanner->tags.contents[scanner->tags.size - 1];
+  if (current_tag->type != SCRIPT && current_tag->type != STYLE)
+    return false;
+
   lexer->mark_end(lexer);
 
-  const char *end_delimiter =
-      scanner->tags.contents[scanner->tags.size - 1].type == SCRIPT ? "</SCRIPT"
-                                                                    : "</STYLE";
+  const char *end_delimiter = current_tag->type == SCRIPT ? "</SCRIPT" : "</STYLE";
 
   unsigned delimiter_index = 0;
   while (lexer->lookahead) {
@@ -922,6 +925,19 @@ static bool scanner_scan(Scanner *scanner, TSLexer *lexer,
     lexer->advance(lexer, true);
   }
 
+  // Check if we're inside a script or style tag - if so, prioritize raw_text
+  bool inside_script_or_style = false;
+  if (scanner->tags.size > 0) {
+    Tag *current_tag = &scanner->tags.contents[scanner->tags.size - 1];
+    inside_script_or_style = (current_tag->type == SCRIPT || current_tag->type == STYLE);
+  }
+
+  // If we're inside script or style tags and raw_text is valid, scan for raw_text
+  if (inside_script_or_style && valid_symbols[RAW_TEXT]) {
+    return scan_raw_text(scanner, lexer);
+  }
+
+  // Original raw_text condition for other contexts
   if (valid_symbols[RAW_TEXT] && !valid_symbols[START_TAG_NAME] &&
       !valid_symbols[END_TAG_NAME] && !valid_symbols[JSP_DIRECTIVE_START] &&
       !valid_symbols[JSP_SCRIPTLET] && !valid_symbols[JSP_EXPRESSION] &&
@@ -951,7 +967,8 @@ static bool scanner_scan(Scanner *scanner, TSLexer *lexer,
     break;
 
   case '$':
-    if (valid_symbols[EL_EXPRESSION]) {
+    // Skip EL expression checking if we're inside script or style tags
+    if (valid_symbols[EL_EXPRESSION] && !inside_script_or_style) {
       lexer->advance(lexer, false);
       if (lexer->lookahead == '{') {
         lexer->advance(lexer, false);
@@ -1006,6 +1023,15 @@ void tree_sitter_jsp_external_scanner_deserialize(void *payload,
 
 bool tree_sitter_jsp_external_scanner_scan(void *payload, TSLexer *lexer,
                                            const bool *valid_symbols) {
+  Scanner *scanner = (Scanner *)payload;
+  
+  // Check if we're inside a script or style tag
+  bool inside_script_or_style = false;
+  if (scanner->tags.size > 0) {
+    Tag *current_tag = &scanner->tags.contents[scanner->tags.size - 1];
+    inside_script_or_style = (current_tag->type == SCRIPT || current_tag->type == STYLE);
+  }
+
   bool is_error_recovery =
       valid_symbols[START_TAG_NAME] && valid_symbols[RAW_TEXT];
   if (!is_error_recovery) {
@@ -1019,8 +1045,8 @@ bool tree_sitter_jsp_external_scanner_scan(void *payload, TSLexer *lexer,
         } else if (lexer->lookahead == '<') {
           lexer->mark_end(lexer);
           break;
-        } else if (lexer->lookahead == '$') {
-          // Check for EL expression start - only stop if followed by {
+        } else if (lexer->lookahead == '$' && !inside_script_or_style) {
+          // Only check for EL expressions if we're NOT inside script or style tags
           TSLexer saved_lexer = *lexer;
           lexer->advance(lexer, false);
           if (lexer->lookahead == '{') {
@@ -1055,6 +1081,5 @@ bool tree_sitter_jsp_external_scanner_scan(void *payload, TSLexer *lexer,
       }
     }
   }
-  Scanner *scanner = (Scanner *)payload;
   return scanner_scan(scanner, lexer, valid_symbols);
 }

@@ -27,9 +27,7 @@ module.exports = grammar({
     $.jsp_scriptlet,
     $.jsp_expression,
     $.jsp_declaration,
-    $.jsp_comment,
-    $.comment,
-    $.el_expression,
+    $.jsp_comment
   ],
 
   rules: {
@@ -150,13 +148,14 @@ module.exports = grammar({
         choice(
           $.attribute_value,
           $.quoted_attribute_value,
+          $.el_expression
         ),
       )),
     ),
 
-    attribute_name: $ => /[^<>"'=/\s]+/,
+    attribute_name: _ => /[^<>"'=/\s]+/,
 
-    attribute_value: $ => /[^<>"'=\s]+/,
+    attribute_value: _ => /[^<>"'=\s]+/,
 
     quoted_attribute_value: $ =>
       choice(
