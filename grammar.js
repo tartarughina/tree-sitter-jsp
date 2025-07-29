@@ -44,7 +44,6 @@ module.exports = grammar({
         $.template_element,
         $.script_element,
         $.style_element,
-        $.doc_type,
       ),
     ),
 
@@ -65,7 +64,6 @@ module.exports = grammar({
       $.erroneous_end_tag,
     ),
 
-    doc_type: $ => seq('<', '!', $.text),
 
     element: $ => choice(
       seq(
@@ -97,35 +95,35 @@ module.exports = grammar({
     start_tag: $ => seq(
       "<",
       alias($._start_tag_name, $.tag_name),
-      repeat(choice($.attribute, $.directive_attribute)),
+      repeat($.attribute),
       ">",
     ),
 
     template_start_tag: $ => seq(
       "<",
       alias($._template_start_tag_name, $.tag_name),
-      repeat(choice($.attribute, $.directive_attribute)),
+      repeat($.attribute),
       ">",
     ),
 
     script_start_tag: $ => seq(
       "<",
       alias($._script_start_tag_name, $.tag_name),
-      repeat(choice($.attribute, $.directive_attribute)),
+      repeat($.attribute),
       ">",
     ),
 
     style_start_tag: $ => seq(
       "<",
       alias($._style_start_tag_name, $.tag_name),
-      repeat(choice($.attribute, $.directive_attribute)),
+      repeat($.attribute),
       ">",
     ),
 
     self_closing_tag: $ => seq(
       "<",
       alias($._start_tag_name, $.tag_name),
-      repeat(choice($.attribute, $.directive_attribute)),
+      repeat($.attribute),
       "/>",
     ),
 
@@ -194,11 +192,7 @@ module.exports = grammar({
       '%>'
     ),
 
-    jsp_directive_name: _ => choice(
-      'page',
-      'taglib',
-      'include'
-    ),
+    jsp_directive_name: _ => /page|taglib|include/,
 
     // JSP declaration for declaring variables and methods
     jsp_declaration: $ => $._jsp_declaration,
@@ -208,35 +202,5 @@ module.exports = grammar({
 
     // Expression Language for accessing data and functions
     el_expression: $ => $._el_expression,
-
-    directive_attribute: $ =>
-      seq(
-        choice(
-          seq(
-            $.directive_name,
-            optional(seq(
-              token.immediate(prec(1, ":")),
-              choice($.directive_argument, $.directive_dynamic_argument),
-            )),
-          ),
-          seq(
-            alias($.directive_shorthand, $.directive_name),
-            choice($.directive_argument, $.directive_dynamic_argument),
-          ),
-        ),
-        optional($.directive_modifiers),
-        optional(seq("=", choice($.attribute_value, $.quoted_attribute_value))),
-      ),
-    directive_name: $ => token(prec(1, /v-[^<>'"=/\s:.]+/)),
-    directive_shorthand: $ => token(prec(1, choice(":", "@", "#"))),
-    directive_argument: $ => token.immediate(/[^<>"'/=\s.]+/),
-    directive_dynamic_argument: $ => seq(
-      token.immediate(prec(1, "[")),
-      optional($.directive_dynamic_argument_value),
-      token.immediate("]"),
-    ),
-    directive_dynamic_argument_value: $ => token.immediate(/[^<>"'/=\s\]]+/),
-    directive_modifiers: $ => repeat1(seq(token.immediate(prec(1, ".")), $.directive_modifier)),
-    directive_modifier: $ => token.immediate(/[^<>"'/=\s.]+/),
   },
 });
