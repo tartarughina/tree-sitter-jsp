@@ -155,7 +155,7 @@ module.exports = grammar({
 
     attribute_name: _ => /[^<>"'=/\s]+/,
 
-    attribute_value: _ => /[^<>"'=\s]+/,
+    attribute_value: _ => /[^<>"'=\s$]+/,
 
     quoted_attribute_value: $ =>
       choice(
