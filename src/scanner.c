@@ -1,3 +1,4 @@
+#include "tag.h"
 #include "tree_sitter/alloc.h"
 #include "tree_sitter/array.h"
 #include "tree_sitter/parser.h"
@@ -28,515 +29,43 @@ enum TokenType {
   COMMENT
 };
 
-typedef enum {
-  AREA,
-  BASE,
-  BASEFONT,
-  BGSOUND,
-  BR,
-  COL,
-  COMMAND,
-  EMBED,
-  FRAME,
-  HR,
-  IMAGE,
-  IMG,
-  INPUT,
-  ISINDEX,
-  KEYGEN,
-  LINK,
-  MENUITEM,
-  META,
-  NEXTID,
-  PARAM,
-  SOURCE,
-  TRACK,
-  WBR,
-  END_OF_VOID_TAGS,
-  A,
-  ABBR,
-  ADDRESS,
-  ARTICLE,
-  ASIDE,
-  AUDIO,
-  B,
-  BDI,
-  BDO,
-  BLOCKQUOTE,
-  BODY,
-  BUTTON,
-  CANVAS,
-  CAPTION,
-  CITE,
-  CODE,
-  COLGROUP,
-  DATA,
-  DATALIST,
-  DD,
-  DEL,
-  DETAILS,
-  DFN,
-  DIALOG,
-  DIV,
-  DL,
-  DT,
-  EM,
-  FIELDSET,
-  FIGCAPTION,
-  FIGURE,
-  FOOTER,
-  FORM,
-  H1,
-  H2,
-  H3,
-  H4,
-  H5,
-  H6,
-  HEAD,
-  HEADER,
-  HGROUP,
-  HTML,
-  I,
-  IFRAME,
-  INS,
-  KBD,
-  LABEL,
-  LEGEND,
-  LI,
-  MAIN,
-  MAP,
-  MARK,
-  MATH,
-  MENU,
-  METER,
-  NAV,
-  NOSCRIPT,
-  OBJECT,
-  OL,
-  OPTGROUP,
-  OPTION,
-  OUTPUT,
-  P,
-  PICTURE,
-  PRE,
-  PROGRESS,
-  Q,
-  RB,
-  RP,
-  RT,
-  RTC,
-  RUBY,
-  S,
-  SAMP,
-  SCRIPT,
-  SECTION,
-  SELECT,
-  SLOT,
-  SMALL,
-  SPAN,
-  STRONG,
-  STYLE,
-  SUB,
-  SUMMARY,
-  SUP,
-  SVG,
-  TABLE,
-  TBODY,
-  TD,
-  TEMPLATE,
-  TEXTAREA,
-  TFOOT,
-  TH,
-  THEAD,
-  TIME,
-  TITLE,
-  TR,
-  U,
-  UL,
-  VAR,
-  VIDEO,
-  CUSTOM,
-} TagType;
-
-typedef struct {
-  TagType type;
-  char *custom_tag_name;
-  size_t custom_tag_name_capacity;
-} Tag;
+// Tag struct is now defined in tag_a.h
 
 typedef struct {
   Array(Tag) tags;
 } Scanner;
 
-// Tag helper functions
-static void tag_init(Tag *tag) {
-  tag->type = CUSTOM;
-  tag->custom_tag_name = NULL;
-  tag->custom_tag_name_capacity = 0;
-}
-
-static void tag_clear(Tag *tag) {
-  if (tag->custom_tag_name) {
-    ts_free(tag->custom_tag_name);
-    tag->custom_tag_name = NULL;
-    tag->custom_tag_name_capacity = 0;
-  }
-}
-
-static void tag_set_name(Tag *tag, const char *name, size_t length) {
-  tag_clear(tag);
-  if (length > 0) {
-    tag->custom_tag_name = ts_malloc(length + 1);
-    memcpy(tag->custom_tag_name, name, length);
-    tag->custom_tag_name[length] = '\0';
-    tag->custom_tag_name_capacity = length + 1;
-  }
-}
-
-static bool tag_eq(const Tag *a, const Tag *b) {
-  if (a->type != b->type)
-    return false;
-  if (a->type == CUSTOM) {
-    if (!a->custom_tag_name || !b->custom_tag_name)
-      return false;
-    return strcmp(a->custom_tag_name, b->custom_tag_name) == 0;
-  }
-  return true;
-}
-
-static bool tag_is_void(const Tag *tag) { return tag->type < END_OF_VOID_TAGS; }
+// Tag helper functions are now provided by tag_a.h
 
 static TagType get_tag_type_for_name(const char *name) {
-  // Convert to uppercase for comparison
+  String tag_name = {0};
   size_t len = strlen(name);
-  char *upper_name = ts_malloc(len + 1);
+
+  // Convert to uppercase and create String
+  array_reserve(&tag_name, len);
   for (size_t i = 0; i < len; i++) {
-    upper_name[i] = towupper(name[i]);
+    array_push(&tag_name, towupper(name[i]));
   }
-  upper_name[len] = '\0';
 
-  TagType result = CUSTOM;
-
-  // Check known tag types - void tags first
-  if (strcmp(upper_name, "AREA") == 0)
-    result = AREA;
-  else if (strcmp(upper_name, "BASE") == 0)
-    result = BASE;
-  else if (strcmp(upper_name, "BASEFONT") == 0)
-    result = BASEFONT;
-  else if (strcmp(upper_name, "BGSOUND") == 0)
-    result = BGSOUND;
-  else if (strcmp(upper_name, "BR") == 0)
-    result = BR;
-  else if (strcmp(upper_name, "COL") == 0)
-    result = COL;
-  else if (strcmp(upper_name, "COMMAND") == 0)
-    result = COMMAND;
-  else if (strcmp(upper_name, "EMBED") == 0)
-    result = EMBED;
-  else if (strcmp(upper_name, "FRAME") == 0)
-    result = FRAME;
-  else if (strcmp(upper_name, "HR") == 0)
-    result = HR;
-  else if (strcmp(upper_name, "IMAGE") == 0)
-    result = IMAGE;
-  else if (strcmp(upper_name, "IMG") == 0)
-    result = IMG;
-  else if (strcmp(upper_name, "INPUT") == 0)
-    result = INPUT;
-  else if (strcmp(upper_name, "ISINDEX") == 0)
-    result = ISINDEX;
-  else if (strcmp(upper_name, "KEYGEN") == 0)
-    result = KEYGEN;
-  else if (strcmp(upper_name, "LINK") == 0)
-    result = LINK;
-  else if (strcmp(upper_name, "MENUITEM") == 0)
-    result = MENUITEM;
-  else if (strcmp(upper_name, "META") == 0)
-    result = META;
-  else if (strcmp(upper_name, "NEXTID") == 0)
-    result = NEXTID;
-  else if (strcmp(upper_name, "PARAM") == 0)
-    result = PARAM;
-  else if (strcmp(upper_name, "SOURCE") == 0)
-    result = SOURCE;
-  else if (strcmp(upper_name, "TRACK") == 0)
-    result = TRACK;
-  else if (strcmp(upper_name, "WBR") == 0)
-    result = WBR;
-  // Non-void tags
-  else if (strcmp(upper_name, "A") == 0)
-    result = A;
-  else if (strcmp(upper_name, "ABBR") == 0)
-    result = ABBR;
-  else if (strcmp(upper_name, "ADDRESS") == 0)
-    result = ADDRESS;
-  else if (strcmp(upper_name, "ARTICLE") == 0)
-    result = ARTICLE;
-  else if (strcmp(upper_name, "ASIDE") == 0)
-    result = ASIDE;
-  else if (strcmp(upper_name, "AUDIO") == 0)
-    result = AUDIO;
-  else if (strcmp(upper_name, "B") == 0)
-    result = B;
-  else if (strcmp(upper_name, "BDI") == 0)
-    result = BDI;
-  else if (strcmp(upper_name, "BDO") == 0)
-    result = BDO;
-  else if (strcmp(upper_name, "BLOCKQUOTE") == 0)
-    result = BLOCKQUOTE;
-  else if (strcmp(upper_name, "BODY") == 0)
-    result = BODY;
-  else if (strcmp(upper_name, "BUTTON") == 0)
-    result = BUTTON;
-  else if (strcmp(upper_name, "CANVAS") == 0)
-    result = CANVAS;
-  else if (strcmp(upper_name, "CAPTION") == 0)
-    result = CAPTION;
-  else if (strcmp(upper_name, "CITE") == 0)
-    result = CITE;
-  else if (strcmp(upper_name, "CODE") == 0)
-    result = CODE;
-  else if (strcmp(upper_name, "COLGROUP") == 0)
-    result = COLGROUP;
-  else if (strcmp(upper_name, "DATA") == 0)
-    result = DATA;
-  else if (strcmp(upper_name, "DATALIST") == 0)
-    result = DATALIST;
-  else if (strcmp(upper_name, "DD") == 0)
-    result = DD;
-  else if (strcmp(upper_name, "DEL") == 0)
-    result = DEL;
-  else if (strcmp(upper_name, "DETAILS") == 0)
-    result = DETAILS;
-  else if (strcmp(upper_name, "DFN") == 0)
-    result = DFN;
-  else if (strcmp(upper_name, "DIALOG") == 0)
-    result = DIALOG;
-  else if (strcmp(upper_name, "DIV") == 0)
-    result = DIV;
-  else if (strcmp(upper_name, "DL") == 0)
-    result = DL;
-  else if (strcmp(upper_name, "DT") == 0)
-    result = DT;
-  else if (strcmp(upper_name, "EM") == 0)
-    result = EM;
-  else if (strcmp(upper_name, "FIELDSET") == 0)
-    result = FIELDSET;
-  else if (strcmp(upper_name, "FIGCAPTION") == 0)
-    result = FIGCAPTION;
-  else if (strcmp(upper_name, "FIGURE") == 0)
-    result = FIGURE;
-  else if (strcmp(upper_name, "FOOTER") == 0)
-    result = FOOTER;
-  else if (strcmp(upper_name, "FORM") == 0)
-    result = FORM;
-  else if (strcmp(upper_name, "H1") == 0)
-    result = H1;
-  else if (strcmp(upper_name, "H2") == 0)
-    result = H2;
-  else if (strcmp(upper_name, "H3") == 0)
-    result = H3;
-  else if (strcmp(upper_name, "H4") == 0)
-    result = H4;
-  else if (strcmp(upper_name, "H5") == 0)
-    result = H5;
-  else if (strcmp(upper_name, "H6") == 0)
-    result = H6;
-  else if (strcmp(upper_name, "HEAD") == 0)
-    result = HEAD;
-  else if (strcmp(upper_name, "HEADER") == 0)
-    result = HEADER;
-  else if (strcmp(upper_name, "HGROUP") == 0)
-    result = HGROUP;
-  else if (strcmp(upper_name, "HTML") == 0)
-    result = HTML;
-  else if (strcmp(upper_name, "I") == 0)
-    result = I;
-  else if (strcmp(upper_name, "IFRAME") == 0)
-    result = IFRAME;
-  else if (strcmp(upper_name, "INS") == 0)
-    result = INS;
-  else if (strcmp(upper_name, "KBD") == 0)
-    result = KBD;
-  else if (strcmp(upper_name, "LABEL") == 0)
-    result = LABEL;
-  else if (strcmp(upper_name, "LEGEND") == 0)
-    result = LEGEND;
-  else if (strcmp(upper_name, "LI") == 0)
-    result = LI;
-  else if (strcmp(upper_name, "MAIN") == 0)
-    result = MAIN;
-  else if (strcmp(upper_name, "MAP") == 0)
-    result = MAP;
-  else if (strcmp(upper_name, "MARK") == 0)
-    result = MARK;
-  else if (strcmp(upper_name, "MATH") == 0)
-    result = MATH;
-  else if (strcmp(upper_name, "MENU") == 0)
-    result = MENU;
-  else if (strcmp(upper_name, "METER") == 0)
-    result = METER;
-  else if (strcmp(upper_name, "NAV") == 0)
-    result = NAV;
-  else if (strcmp(upper_name, "NOSCRIPT") == 0)
-    result = NOSCRIPT;
-  else if (strcmp(upper_name, "OBJECT") == 0)
-    result = OBJECT;
-  else if (strcmp(upper_name, "OL") == 0)
-    result = OL;
-  else if (strcmp(upper_name, "OPTGROUP") == 0)
-    result = OPTGROUP;
-  else if (strcmp(upper_name, "OPTION") == 0)
-    result = OPTION;
-  else if (strcmp(upper_name, "OUTPUT") == 0)
-    result = OUTPUT;
-  else if (strcmp(upper_name, "P") == 0)
-    result = P;
-  else if (strcmp(upper_name, "PICTURE") == 0)
-    result = PICTURE;
-  else if (strcmp(upper_name, "PRE") == 0)
-    result = PRE;
-  else if (strcmp(upper_name, "PROGRESS") == 0)
-    result = PROGRESS;
-  else if (strcmp(upper_name, "Q") == 0)
-    result = Q;
-  else if (strcmp(upper_name, "RB") == 0)
-    result = RB;
-  else if (strcmp(upper_name, "RP") == 0)
-    result = RP;
-  else if (strcmp(upper_name, "RT") == 0)
-    result = RT;
-  else if (strcmp(upper_name, "RTC") == 0)
-    result = RTC;
-  else if (strcmp(upper_name, "RUBY") == 0)
-    result = RUBY;
-  else if (strcmp(upper_name, "S") == 0)
-    result = S;
-  else if (strcmp(upper_name, "SAMP") == 0)
-    result = SAMP;
-  else if (strcmp(upper_name, "SCRIPT") == 0)
-    result = SCRIPT;
-  else if (strcmp(upper_name, "SECTION") == 0)
-    result = SECTION;
-  else if (strcmp(upper_name, "SELECT") == 0)
-    result = SELECT;
-  else if (strcmp(upper_name, "SLOT") == 0)
-    result = SLOT;
-  else if (strcmp(upper_name, "SMALL") == 0)
-    result = SMALL;
-  else if (strcmp(upper_name, "SPAN") == 0)
-    result = SPAN;
-  else if (strcmp(upper_name, "STRONG") == 0)
-    result = STRONG;
-  else if (strcmp(upper_name, "STYLE") == 0)
-    result = STYLE;
-  else if (strcmp(upper_name, "SUB") == 0)
-    result = SUB;
-  else if (strcmp(upper_name, "SUMMARY") == 0)
-    result = SUMMARY;
-  else if (strcmp(upper_name, "SUP") == 0)
-    result = SUP;
-  else if (strcmp(upper_name, "SVG") == 0)
-    result = SVG;
-  else if (strcmp(upper_name, "TABLE") == 0)
-    result = TABLE;
-  else if (strcmp(upper_name, "TBODY") == 0)
-    result = TBODY;
-  else if (strcmp(upper_name, "TD") == 0)
-    result = TD;
-  else if (strcmp(upper_name, "TEMPLATE") == 0)
-    result = TEMPLATE;
-  else if (strcmp(upper_name, "TEXTAREA") == 0)
-    result = TEXTAREA;
-  else if (strcmp(upper_name, "TFOOT") == 0)
-    result = TFOOT;
-  else if (strcmp(upper_name, "TH") == 0)
-    result = TH;
-  else if (strcmp(upper_name, "THEAD") == 0)
-    result = THEAD;
-  else if (strcmp(upper_name, "TIME") == 0)
-    result = TIME;
-  else if (strcmp(upper_name, "TITLE") == 0)
-    result = TITLE;
-  else if (strcmp(upper_name, "TR") == 0)
-    result = TR;
-  else if (strcmp(upper_name, "U") == 0)
-    result = U;
-  else if (strcmp(upper_name, "UL") == 0)
-    result = UL;
-  else if (strcmp(upper_name, "VAR") == 0)
-    result = VAR;
-  else if (strcmp(upper_name, "VIDEO") == 0)
-    result = VIDEO;
-
-  ts_free(upper_name);
+  TagType result = tag_type_for_name(&tag_name);
+  array_delete(&tag_name);
   return result;
 }
 
-static Tag tag_for_name(const char *name) {
-  Tag tag;
-  tag_init(&tag);
+static Tag create_tag_from_name(const char *name) {
+  String tag_name = {0};
+  size_t len = strlen(name);
 
-  TagType type = get_tag_type_for_name(name);
-  tag.type = type;
-
-  if (type == CUSTOM) {
-    tag_set_name(&tag, name, strlen(name));
+  // Convert to uppercase and create String
+  array_reserve(&tag_name, len);
+  for (size_t i = 0; i < len; i++) {
+    array_push(&tag_name, towupper(name[i]));
   }
 
-  return tag;
+  return tag_for_name(tag_name); // Uses tag.h implementation
 }
 
-static bool tag_can_contain(const Tag *parent, const Tag *child) {
-  TagType child_type = child->type;
-
-  switch (parent->type) {
-  case LI:
-    return child_type != LI;
-
-  case DT:
-  case DD:
-    return child_type != DT && child_type != DD;
-
-  case P: {
-    // Tags not allowed in paragraphs
-    TagType not_allowed[] = {
-        ADDRESS,  ARTICLE,    ASIDE,  BLOCKQUOTE, DETAILS, DIV, DL,
-        FIELDSET, FIGCAPTION, FIGURE, FOOTER,     FORM,    H1,  H2,
-        H3,       H4,         H5,     H6,         HEADER,  HR,  MAIN,
-        NAV,      OL,         P,      PRE,        SECTION};
-    size_t count = sizeof(not_allowed) / sizeof(TagType);
-    for (size_t i = 0; i < count; i++) {
-      if (child_type == not_allowed[i]) {
-        return false;
-      }
-    }
-    return true;
-  }
-
-  case COLGROUP:
-    return child_type == COL;
-
-  case RB:
-  case RT:
-  case RP:
-    return child_type != RB && child_type != RT && child_type != RP;
-
-  case OPTGROUP:
-    return child_type != OPTGROUP;
-
-  case TR:
-    return child_type != TR;
-
-  case TD:
-  case TH:
-    return child_type != TD && child_type != TH && child_type != TR;
-
-  default:
-    return true;
-  }
-}
+// tag_can_contain is now provided by tag_a.h
 
 // Scanner management functions
 static Scanner *scanner_new(void) {
@@ -547,7 +76,7 @@ static Scanner *scanner_new(void) {
 
 static void scanner_delete(Scanner *scanner) {
   for (uint32_t i = 0; i < scanner->tags.size; i++) {
-    tag_clear(&scanner->tags.contents[i]);
+    tag_free(&scanner->tags.contents[i]);
   }
   array_delete(&scanner->tags);
   ts_free(scanner);
@@ -565,8 +94,7 @@ static unsigned scanner_serialize(Scanner *scanner, char *buffer) {
   for (; serialized_tag_count < tag_count; serialized_tag_count++) {
     Tag *tag = &scanner->tags.contents[serialized_tag_count];
     if (tag->type == CUSTOM) {
-      unsigned name_length =
-          tag->custom_tag_name ? strlen(tag->custom_tag_name) : 0;
+      unsigned name_length = tag->custom_tag_name.size;
       if (name_length > UINT8_MAX)
         name_length = UINT8_MAX;
       if (i + 2 + name_length >= TREE_SITTER_SERIALIZATION_BUFFER_SIZE)
@@ -574,7 +102,7 @@ static unsigned scanner_serialize(Scanner *scanner, char *buffer) {
       buffer[i++] = (char)tag->type;
       buffer[i++] = name_length;
       if (name_length > 0) {
-        memcpy(&buffer[i], tag->custom_tag_name, name_length);
+        memcpy(&buffer[i], tag->custom_tag_name.contents, name_length);
         i += name_length;
       }
     } else {
@@ -591,7 +119,7 @@ static unsigned scanner_serialize(Scanner *scanner, char *buffer) {
 static void scanner_deserialize(Scanner *scanner, const char *buffer,
                                 unsigned length) {
   for (uint32_t i = 0; i < scanner->tags.size; i++) {
-    tag_clear(&scanner->tags.contents[i]);
+    tag_free(&scanner->tags.contents[i]);
   }
   array_clear(&scanner->tags);
 
@@ -610,13 +138,15 @@ static void scanner_deserialize(Scanner *scanner, const char *buffer,
 
     for (unsigned j = 0; j < serialized_tag_count; j++) {
       Tag *tag = &scanner->tags.contents[j];
-      tag_init(tag);
+      *tag = tag_new();
       tag->type = (TagType)buffer[i++];
       if (tag->type == CUSTOM) {
         uint16_t name_length = (uint8_t)buffer[i++];
         if (name_length > 0) {
-          tag_set_name(tag, &buffer[i], name_length);
-          i += name_length;
+          array_reserve(&tag->custom_tag_name, name_length);
+          for (uint16_t k = 0; k < name_length; k++) {
+            array_push(&tag->custom_tag_name, buffer[i++]);
+          }
         }
       }
     }
@@ -829,35 +359,35 @@ static bool scan_implicit_end_tag(Scanner *scanner, TSLexer *lexer) {
   if (tag_name[0] == '\0')
     return false;
 
-  Tag next_tag = tag_for_name(tag_name);
+  Tag next_tag = create_tag_from_name(tag_name);
 
   if (is_closing_tag) {
     // The tag correctly closes the topmost element on the stack
     if (scanner->tags.size > 0 &&
         tag_eq(&scanner->tags.contents[scanner->tags.size - 1], &next_tag)) {
-      tag_clear(&next_tag);
+      tag_free(&next_tag);
       return false;
     }
 
     // Otherwise, dig deeper and queue implicit end tags
     for (uint32_t i = 0; i < scanner->tags.size; i++) {
       if (tag_eq(&scanner->tags.contents[i], &next_tag)) {
-        tag_clear(&scanner->tags.contents[scanner->tags.size - 1]);
+        tag_free(&scanner->tags.contents[scanner->tags.size - 1]);
         array_pop(&scanner->tags);
         lexer->result_symbol = IMPLICIT_END_TAG;
-        tag_clear(&next_tag);
+        tag_free(&next_tag);
         return true;
       }
     }
   } else if (parent && !tag_can_contain(parent, &next_tag)) {
-    tag_clear(&scanner->tags.contents[scanner->tags.size - 1]);
+    tag_free(&scanner->tags.contents[scanner->tags.size - 1]);
     array_pop(&scanner->tags);
     lexer->result_symbol = IMPLICIT_END_TAG;
-    tag_clear(&next_tag);
+    tag_free(&next_tag);
     return true;
   }
 
-  tag_clear(&next_tag);
+  tag_free(&next_tag);
   return false;
 }
 
@@ -867,7 +397,7 @@ static bool scan_start_tag_name(Scanner *scanner, TSLexer *lexer) {
   if (tag_name[0] == '\0')
     return false;
 
-  Tag tag = tag_for_name(tag_name);
+  Tag tag = create_tag_from_name(tag_name);
   array_push(&scanner->tags, tag);
 
   switch (tag.type) {
@@ -893,16 +423,16 @@ static bool scan_end_tag_name(Scanner *scanner, TSLexer *lexer) {
   if (tag_name[0] == '\0')
     return false;
 
-  Tag tag = tag_for_name(tag_name);
+  Tag tag = create_tag_from_name(tag_name);
   if (scanner->tags.size > 0 &&
       tag_eq(&scanner->tags.contents[scanner->tags.size - 1], &tag)) {
-    tag_clear(&scanner->tags.contents[scanner->tags.size - 1]);
+    tag_free(&scanner->tags.contents[scanner->tags.size - 1]);
     array_pop(&scanner->tags);
     lexer->result_symbol = END_TAG_NAME;
   } else {
     lexer->result_symbol = ERRONEOUS_END_TAG_NAME;
   }
-  tag_clear(&tag);
+  tag_free(&tag);
   return true;
 }
 
@@ -911,7 +441,7 @@ static bool scan_self_closing_tag_delimiter(Scanner *scanner, TSLexer *lexer) {
   if (lexer->lookahead == '>') {
     lexer->advance(lexer, false);
     if (scanner->tags.size > 0) {
-      tag_clear(&scanner->tags.contents[scanner->tags.size - 1]);
+      tag_free(&scanner->tags.contents[scanner->tags.size - 1]);
       array_pop(&scanner->tags);
       lexer->result_symbol = SELF_CLOSING_TAG_DELIMITER;
     }
@@ -1044,10 +574,11 @@ bool tree_sitter_jsp_external_scanner_scan(void *payload, TSLexer *lexer,
       valid_symbols[START_TAG_NAME] && valid_symbols[RAW_TEXT];
   if (!is_error_recovery) {
     // Check for EL expressions first, before text fragment scanning
-    if (lexer->lookahead == '$' && valid_symbols[EL_EXPRESSION] && !inside_script_or_style) {
+    if (lexer->lookahead == '$' && valid_symbols[EL_EXPRESSION] &&
+        !inside_script_or_style) {
       return scanner_scan(scanner, lexer, valid_symbols);
     }
-    
+
     if (lexer->lookahead != '<' &&
         (valid_symbols[TEXT_FRAGMENT] || valid_symbols[INTERPOLATION_TEXT])) {
       bool has_text = false;
@@ -1059,17 +590,19 @@ bool tree_sitter_jsp_external_scanner_scan(void *payload, TSLexer *lexer,
           lexer->mark_end(lexer);
           break;
         } else if (lexer->lookahead == '$' && !inside_script_or_style) {
-          // Only check for EL expressions if we're NOT inside script or style tags
-          // AND if EL_EXPRESSION is a valid symbol
+          // Only check for EL expressions if we're NOT inside script or style
+          // tags AND if EL_EXPRESSION is a valid symbol
           if (valid_symbols[EL_EXPRESSION]) {
-            lexer->mark_end(lexer); // Mark end BEFORE checking for EL expression
+            lexer->mark_end(
+                lexer); // Mark end BEFORE checking for EL expression
             lexer->advance(lexer, false);
             if (lexer->lookahead == '{') {
               // This is an EL expression, break to return the text fragment
               break;
             } else {
               // This is just a $ character, continue scanning
-              // Note: lexer is already advanced, so continue from current position
+              // Note: lexer is already advanced, so continue from current
+              // position
             }
           } else {
             // EL_EXPRESSION is not valid, treat $ as regular text
